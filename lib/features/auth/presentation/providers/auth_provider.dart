@@ -66,5 +66,32 @@ Future<bool> register({
   return true;
 }
 
+Future<bool> loginAfterEmailVerification() async {
+  _setLoading();
+ 
+  
+  await _firebaseUser?.reload();
+  _firebaseUser = _auth.currentUser;
+ 
+  if (!(_firebaseUser?.emailVerified ?? false)) {
+    _status = AuthStatus.emailNotVerified;
+    return false;
+  }
+ 
+  
+  final credential = await _auth.signInWithEmailAndPassword(
+    email: _tempEmail!,
+    password: _tempPassword!,
+  );
+  _firebaseUser = credential.user;
+  _tempEmail = null;   // Hapus credentials dari memory
+  _tempPassword = null;
+ 
+  
+  return await _verifyTokenToBackend();
+}
+
+
+
 
 }
