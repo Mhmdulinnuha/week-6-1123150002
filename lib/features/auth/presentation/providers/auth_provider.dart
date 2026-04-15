@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-
+import 'package:latihanuts/features/auth/presentation/widget/google_sign_in_button.dart';
+import '../../../../core/services/dio_client.dart';
+import '../../../../core/services/secure_storage.dart';
+import '../../../../core/contstans/api_constants.dart';
 
 
 // Representasi kondisi autentikasi
@@ -16,7 +19,7 @@ enum AuthStatus {
 
 class AuthProvider extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GoogleSignInButton _googleSignIn = GoogleSignInButton();
 
 
   // ─── State ───────────────────────────────────────────────
@@ -69,7 +72,6 @@ Future<bool> register({
 Future<bool> loginAfterEmailVerification() async {
   _setLoading();
  
-  
   await _firebaseUser?.reload();
   _firebaseUser = _auth.currentUser;
  
@@ -78,20 +80,38 @@ Future<bool> loginAfterEmailVerification() async {
     return false;
   }
  
-  
+ 
   final credential = await _auth.signInWithEmailAndPassword(
     email: _tempEmail!,
     password: _tempPassword!,
   );
   _firebaseUser = credential.user;
-  _tempEmail = null;   // Hapus credentials dari memory
+  _tempEmail = null;  
   _tempPassword = null;
  
-  
+ 
   return await _verifyTokenToBackend();
 }
 
-
-
+Future<bool> _verifyTokenToBackend() async {
+  final firebaseToken = await _firebaseUser?.getIdToken();
+ 
+  
+  final response = await DioClient.instance.post(
+    ApiConstants.verifyToken,
+    data: {'firebase_token': firebaseToken},
+  );
+ 
+ 
+  final data = response.data['data'] as Map<String, dynamic>;
+  final backendToken = data['access_token'] as String;
+ 
+  
+  await SecureStorageService.saveToken(backendToken);
+ 
+  _status = AuthStatus.authenticated;
+  notifyListeners();
+  return true;
+}
 
 }
