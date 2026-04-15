@@ -39,11 +39,6 @@ class AuthProvider extends ChangeNotifier {
   bool       get isLoading     => _status == AuthStatus.loading; 
 
 // ─── Register dengan Email & Password ────────────────────
-void _setLoading() {
-  _status = AuthStatus.loading;
-  notifyListeners();
-}
-
 Future<bool> register({
   required String name,
   required String email,
@@ -115,11 +110,6 @@ Future<bool> _verifyTokenToBackend() async {
 
 // ─── Login dengan Email & Password ───────────────────────
 
-void _setError(String message) {
-  _status = AuthStatus.error;
-  _errorMessage = message;
-  notifyListeners();
-}
 
   Future<bool> loginWithEmail({
     required String email,
@@ -148,22 +138,7 @@ void _setError(String message) {
     
   }
 
-  String _mapFirebaseError(String code) {
-  switch (code) {
-    case 'user-not-found':
-      return 'User tidak ditemukan';
-    case 'wrong-password':
-      return 'Password salah';
-    case 'invalid-email':
-      return 'Email tidak valid';
-    case 'email-already-in-use':
-      return 'Email sudah digunakan';
-    case 'weak-password':
-      return 'Password terlalu lemah';
-    default:
-      return 'Terjadi kesalahan';
-  }
-}
+ 
 
 // ─── Login dengan Google ──────────────────────────────────
   Future<bool> loginWithGoogle() async {
@@ -222,8 +197,35 @@ void _setError(String message) {
     notifyListeners();
   }
 
+   // ─── Private Helpers ──────────────────────────────────────
+  void _setLoading() {
+    _status = AuthStatus.loading;
+    _errorMessage = null;
+    notifyListeners();
+  }
 
 
+  void _setError(String message) {
+    _status = AuthStatus.error;
+    _errorMessage = message;
+    notifyListeners();
+  }
 
 
+  String _mapFirebaseError(String code) => switch (code) {
+    'email-already-in-use'  => 'Email sudah terdaftar. Gunakan email lain.',
+    'user-not-found'        => 'Akun tidak ditemukan. Silakan daftar.',
+    'wrong-password'        => 'Password salah. Coba lagi.',
+    'invalid-email'        => 'Format email tidak valid.',
+    'weak-password'        => 'Password terlalu lemah. Minimal 6 karakter.',
+    'network-request-failed'=> 'Tidak ada koneksi internet.',
+    _                      => 'Terjadi kesalahan. Coba lagi.',
+  };
 }
+
+
+
+
+
+
+
