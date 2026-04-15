@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../widget/google_sign_in_button.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../../../core/services/dio_client.dart';
 import '../../../../core/services/secure_storage.dart';
 import '../../../../core/contstans/api_constants.dart';
@@ -18,7 +18,7 @@ enum AuthStatus {
 
 class AuthProvider extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignInButton _googleSignIn = GoogleSignInButton();
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
 
   // ─── State ───────────────────────────────────────────────
@@ -164,6 +164,35 @@ void _setError(String message) {
       return 'Terjadi kesalahan';
   }
 }
+
+// ─── Login dengan Google ──────────────────────────────────
+  Future<bool> loginWithGoogle() async {
+    _setLoading();
+    try {
+      final googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        _setError('Login Google dibatalkan');
+        return false;
+      }
+
+
+      final googleAuth  = await googleUser.authentication;
+      final credential  = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken:     googleAuth.idToken,
+      );
+      final userCred = await _auth.signInWithCredential(credential);
+      _firebaseUser  = userCred.user;
+
+
+     
+      return await _verifyTokenToBackend();
+    } catch (e) {
+      _setError('Gagal login dengan Google: $e');
+      return false;
+    }
+  }
+
 
 
 }
