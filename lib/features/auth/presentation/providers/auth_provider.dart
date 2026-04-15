@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:latihanuts/features/auth/presentation/widget/google_sign_in_button.dart';
+import '../widget/google_sign_in_button.dart';
 import '../../../../core/services/dio_client.dart';
 import '../../../../core/services/secure_storage.dart';
 import '../../../../core/contstans/api_constants.dart';
@@ -113,5 +112,58 @@ Future<bool> _verifyTokenToBackend() async {
   notifyListeners();
   return true;
 }
+
+// ─── Login dengan Email & Password ───────────────────────
+
+void _setError(String message) {
+  _status = AuthStatus.error;
+  _errorMessage = message;
+  notifyListeners();
+}
+
+  Future<bool> loginWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    _setLoading();
+    try {
+      final credential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      _firebaseUser = credential.user;
+
+      if (!(_firebaseUser?.emailVerified ?? false)) {
+        _status = AuthStatus.emailNotVerified;
+        notifyListeners();
+        return false;
+      }
+
+      return await _verifyTokenToBackend();
+    } on FirebaseAuthException catch (e) {
+      _setError(_mapFirebaseError(e.code));
+      return false;
+    }
+
+    
+  }
+
+  String _mapFirebaseError(String code) {
+  switch (code) {
+    case 'user-not-found':
+      return 'User tidak ditemukan';
+    case 'wrong-password':
+      return 'Password salah';
+    case 'invalid-email':
+      return 'Email tidak valid';
+    case 'email-already-in-use':
+      return 'Email sudah digunakan';
+    case 'weak-password':
+      return 'Password terlalu lemah';
+    default:
+      return 'Terjadi kesalahan';
+  }
+}
+
 
 }
