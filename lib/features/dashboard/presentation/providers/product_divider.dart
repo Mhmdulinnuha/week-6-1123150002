@@ -2,18 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import '../../../../core/contstans/api_constants.dart';
 import '../../../../core/services/dio_client.dart';
+import '../../data/models/product_model.dart';
 
-class ProductModel {
-  final String name;
-
-  ProductModel({required this.name});
-
-  factory ProductModel.fromJson(Map<String, dynamic> json) {
-    return ProductModel(
-      name: json['name'] ?? '',
-    );
-  }
-}
 
 enum ProductStatus {
   initial,
