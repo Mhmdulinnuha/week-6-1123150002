@@ -89,22 +89,21 @@ Future<bool> loginAfterEmailVerification() async {
 
 Future<bool> _verifyTokenToBackend() async {
   final firebaseToken = await _firebaseUser?.getIdToken();
- 
-  
+
   final response = await DioClient.instance.post(
     ApiConstants.verifyToken,
     data: {'firebase_token': firebaseToken},
   );
- 
- 
+
   final data = response.data['data'] as Map<String, dynamic>;
-  final backendToken = data['access_token'] as String;
- 
-  
-  await SecureStorageService.saveToken(backendToken);
- 
+
+  _backendToken = data['access_token'] as String;
+
+  await SecureStorageService.saveToken(_backendToken!);
+
   _status = AuthStatus.authenticated;
   notifyListeners();
+
   return true;
 }
 
@@ -112,32 +111,36 @@ Future<bool> _verifyTokenToBackend() async {
 
 
   Future<bool> loginWithEmail({
-    required String email,
-    required String password,
-  }) async {
-    _setLoading();
-    try {
-      final credential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      _firebaseUser = credential.user;
+  required String email,
+  required String password,
+}) async {
+  _setLoading();
 
-      if (!(_firebaseUser?.emailVerified ?? false)) {
-        _status = AuthStatus.emailNotVerified;
-        notifyListeners();
-        return false;
-      }
+  try {
+    final credential = await _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
 
-      return await _verifyTokenToBackend();
-    } on FirebaseAuthException catch (e) {
-      _setError(_mapFirebaseError(e.code));
+    _firebaseUser = credential.user;
+
+    if (!(_firebaseUser?.emailVerified ?? false)) {
+      _status = AuthStatus.emailNotVerified;
+      notifyListeners();
       return false;
     }
 
-    
-  }
+    return await _verifyTokenToBackend();
 
+  } on FirebaseAuthException catch (e) {
+    _setError(_mapFirebaseError(e.code));
+    return false;
+
+  } catch (e) {
+    _setError('Terjadi kesalahan: $e');
+    return false;
+  }
+}
  
 
 // ─── Login dengan Google ──────────────────────────────────

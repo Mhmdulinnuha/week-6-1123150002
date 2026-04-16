@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/product_divider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../data/models/product_model.dart';
+import '../../../../core/routes/app_router.dart';
 
 
 class DashboardPage extends StatefulWidget {

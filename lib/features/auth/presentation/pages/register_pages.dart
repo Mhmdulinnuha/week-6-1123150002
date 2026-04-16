@@ -6,6 +6,7 @@ import '../widget/loading_overlay.dart';
 import '../widget/custom_textfield.dart';
 import '../widget/auth_header.dart';
 import '../widget/custom_button.dart';
+import '../../../../core/routes/app_router.dart';
 
 
 class RegisterPage extends StatefulWidget {

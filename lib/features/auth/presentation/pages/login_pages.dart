@@ -8,7 +8,8 @@ import '../widget/auth_header.dart';
 import '../widget/custom_button.dart';
 import '../widget/google_sign_in_button.dart';
 import '../widget/divider_with_text.dart';
-
+import '../../../../core/routes/app_router.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
